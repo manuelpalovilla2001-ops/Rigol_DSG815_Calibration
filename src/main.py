@@ -1,6 +1,7 @@
 import pyvisa
+import time
 import pandas as pd
-from inst_virtual_lib import RigolDSG815, RigolDs2202, RigolDsa800
+from inst_virtual_lib import RigolDSG815, RigolDsa800
 
 def main():
     # Defino los parámetros exactos según el manual del DSG815
@@ -11,14 +12,14 @@ def main():
 
     rm = pyvisa.ResourceManager()
 
-    analizador.set_span(100)
-    analizador.set_referencelevel(-20)
-    analizador.set_rbw(1)
-
     try:
         # IMPORTANTE: Reemplazar con las direcciones USB reales
         generador = RigolDSG815(rm.open_resource('USB0::...::INSTR'))
         analizador = RigolDsa800(rm.open_resource('USB0::...::INSTR'))
+
+        analizador.set_span(100)
+        analizador.set_referencelevel(-20)
+        analizador.set_rbw(1)
         
         generador.set_amplitud(amplitud_ref) 
         generador.set_rf_output("ON")
@@ -28,6 +29,8 @@ def main():
         for freq in frecuencias_prueba:
             generador.set_frecuencia(freq)
             analizador.set_freq_center(freq)
+
+            time.sleep(1.5)
             
             analizador.peaksearch(1) 
             
@@ -61,3 +64,6 @@ def main():
         
         print("\n--- Reporte Final Generado ---")
         print(df.to_string(index=False))
+
+if __name__ == "__main__":
+    main()

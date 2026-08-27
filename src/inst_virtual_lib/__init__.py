@@ -12,6 +12,7 @@ from inst_virtual_lib.osciloscopios import (
 )
 
 from inst_virtual_lib.generadores_rf import GeneradorRF, RigolDSG815
+from inst_virtual_lib.analizador_espectro import RigolDsa800
 
 __all__ = [
     "Instrument",

@@ -13,6 +13,7 @@ from inst_virtual_lib.osciloscopios import (
 
 from inst_virtual_lib.generadores_rf import GeneradorRF, RigolDSG815
 from inst_virtual_lib.analizador_espectro import RigolDsa800
+from inst_virtual_lib.medidor_potencia import AnritsuML2487B
 
 __all__ = [
     "Instrument",
@@ -28,4 +29,5 @@ __all__ = [
     "TektronixDsoDpoMsoTds",
     "GeneradorRF",
     "RigolDSG815",
+    "AnritsuML2487B",
 ]

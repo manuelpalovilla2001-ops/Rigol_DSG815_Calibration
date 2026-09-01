@@ -102,7 +102,7 @@ class RigolDsa800(AnalizadorEspectro):
 
     def peaksearch(self, marker):
         self.write(":CALCulate:MARKer" + str(marker) + ":STATe ON")  # MARKer1 2,3 o 4
-        self.write(":CALCulate:MARKer" + str(marker) + "MAXImum:MAX")
+        self.write(":CALCulate:MARKer" + str(marker) + ":MAXImum:MAX")
 
     def set_marker_freq(self, marker, hz):
         self.write(":CALCulate:MARKer" + str(marker) + ":STATe ON")  # MARKer1 2,3 o 4

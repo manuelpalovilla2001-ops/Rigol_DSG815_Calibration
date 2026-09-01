@@ -14,12 +14,12 @@ def main():
 
     try:
         # IMPORTANTE: Reemplazar con las direcciones USB reales
-        generador = RigolDSG815(rm.open_resource('USB0::...::INSTR'))
-        analizador = RigolDsa800(rm.open_resource('USB0::...::INSTR'))
+        generador = RigolDSG815(rm.open_resource(rm.list_resources('?*::DSG?*:INSTR')[0]))
+        analizador = RigolDsa800(rm.open_resource(rm.list_resources('?*::DSA?*:INSTR')[0]))
 
-        analizador.set_span(100)
-        analizador.set_referencelevel(-20)
-        analizador.set_rbw(1)
+        analizador.set_span(40e3)
+        analizador.set_referencelevel(-10)
+        analizador.set_rbw(10e3)
         
         generador.set_amplitud(amplitud_ref) 
         generador.set_rf_output("ON")
@@ -28,12 +28,16 @@ def main():
         
         for freq in frecuencias_prueba:
             generador.set_frecuencia(freq)
-            analizador.set_freq_center(freq)
+            analizador.set_freq_center(freq)            
+            time.sleep(2)
+            analizador.set_marker_freq(1,freq)
 
-            time.sleep(1.5)
-            
-            analizador.peaksearch(1) 
-            
+            while True:
+                amp, _ = analizador.get_marker(1)
+                if float(amp) > -50:
+                    break
+                time.sleep(2)
+
             amplitud_str, frecuencia_str = analizador.get_marker(1)
             amplitud_medida = float(amplitud_str)
             

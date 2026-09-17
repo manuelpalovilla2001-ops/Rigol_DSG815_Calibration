@@ -7,14 +7,17 @@ class MedidorPotencia(Instrument):
 
 
 class AnritsuML2487B(MedidorPotencia):
-    #REVISAR
     def __init__(self, resource):
         super().__init__(resource)
         
+    def set_frecuencia(self, hz, sensor='A'):
+        # El manual indica que para que el medidor de potencia cambie la frecuencia
+        # se debe configurar el Cal Factor Source en FREQ
+        self.write(f"SNCFSRC {sensor},FREQ")
+        self.write(f"SNCFRQ {sensor},{hz}HZ")
+        
     def get_potencia(self, canal=1):
         respuesta = self.query(f"CWO {canal}")
-        
-        partes = respuesta.split(",")
-        val_str = partes[-1].strip()
-        
+        aux = respuesta.split(",")
+        val_str = aux[-1].strip()
         return float(val_str)

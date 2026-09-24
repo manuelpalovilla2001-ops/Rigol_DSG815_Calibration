@@ -48,7 +48,7 @@ def main():
             generador.set_frecuencia(freq)
             analizador.set_freq_center(freq)            
             time.sleep(2)
-            analizador.peaksearch(1)
+            analizador.set_marker_freq(1,freq)
 
             while True:
                 amp, _ = analizador.get_marker(1)
@@ -113,7 +113,7 @@ def main():
         nombre_archivo = "test_amplitud.csv"
         df.to_csv(nombre_archivo, index=False)
         
-        print("\n--- Reporte Final Generado Amplitud---")
+        print("\n--- Reporte Guardado: Generado Amplitud---")
         print(df.to_string(index=False))
 
 if __name__ == "__main__":

@@ -36,12 +36,22 @@ def main():
             
             # Portadora
             analizador.set_marker_freq(1, fc)
-            time.sleep(0.5)
+            while True:
+                p_carrier, _ = analizador.get_marker(1)
+                if float(p_carrier) > -50:  #Revisar piso de ruido
+                    break
+                time.sleep(2)
+                
             p_carrier = float(analizador.get_marker(1)[0])
             
             # Banda Lateral Superior
             analizador.set_marker_freq(2, fc + fm)
-            time.sleep(0.5)
+            while True:
+                p_sideband, _ = analizador.get_marker(1)
+                if float(p_sideband) > -50:  #Revisar piso de ruido
+                    break
+                time.sleep(2)
+
             p_sideband = float(analizador.get_marker(2)[0])
             
             # (m = 2 * 10^(-DeltaP / 20))
@@ -68,7 +78,7 @@ def main():
         columnas = ["AM Depth Setting (%)", "Carrier Power (dBm)", "Sideband Power (dBm)", "Delta P (dB)", "Measured AM Depth (%)", "Error (%)"]
         df = pd.DataFrame(resultados_am, columns=columnas)
         df.to_csv("test_am.csv", index=False)
-        print("\n--- Reporte Final Generado AM---")
+        print("\n--- Reporte Guardado: Generado AM---")
 
 if __name__ == "__main__":
     main()

@@ -2,3 +2,5 @@ pyvisa
 pandas 
 numpy
 scipy
+ipykernel
+matplotlib

@@ -1,18 +1,6 @@
-"""
-Created on Fri Oct 26 10:07:15 2018
-
-@author: Federico Bua, Lucas Manfredi
-
-"""
-
 import numpy as np
 
 from inst_virtual_lib.instrument import Instrument
-
-# ------------------------------------------------------------------------------
-# ------------------------- BASE CLASS -----------------------------------------
-# ------------------------------------------------------------------------------
-
 
 class AnalizadorEspectro(Instrument):
     def __init__(self, handler):
@@ -60,10 +48,9 @@ class AnalizadorEspectro(Instrument):
     def get_trace(self):
         pass
 
+    def set_marker_noise(self, marker, state):
+        pass
 
-# -----------------------------------------------------------------------------
-# --------------------Analizador de espectro DSA815----------------------------
-# -----------------------------------------------------------------------------
 class RigolDsa800(AnalizadorEspectro):
     def __init__(self, handler):
         super().__init__(handler)
@@ -126,3 +113,6 @@ class RigolDsa800(AnalizadorEspectro):
     def set_marker_reference_level(self, marker):
         self.write(":CALCulate:MARKer" + str(marker) + ":STATe ON")  # MARKer1 2,3 o 4
         self.write(":CALCulate:MARKer" + str(marker) + ":SET:RLEVel")
+
+    def set_marker_noise(self, marker, state):
+        self.write(f":CALCulate:MARKer{marker}:FUNCtion {state}")    # state = NOISe u OFF

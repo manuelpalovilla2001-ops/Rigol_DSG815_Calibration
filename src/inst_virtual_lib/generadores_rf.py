@@ -14,9 +14,20 @@ class GeneradorRF(Instrument):
     def set_amplitud(self, dbm):
         pass
         
-    def set_rf_output(self, estado):
+    def set_rf_output(self, state):
         pass
 
+    def set_fm_state(self, state):
+        pass
+        
+    def set_fm_deviation(self, hz):
+        pass
+        
+    def set_fm_freq(self, hz):
+        pass
+
+    def set_fm_waveform(self, waveform):
+        pass
 
 class RigolDSG815(GeneradorRF):
     
@@ -29,5 +40,18 @@ class RigolDSG815(GeneradorRF):
     def set_amplitud(self, dbm):
         self.write(f":SOURce:LEVel {dbm}")
         
-    def set_rf_output(self, estado):
-        self.write(f":OUTPut:STATe {estado}")
+    def set_rf_output(self, state):
+        self.write(f":OUTPut:STATe {state}")        # state: ON or OFF
+
+    def set_fm_state(self, state):
+        self.write(f":SOURce:FM:STATe {state}")     # state: ON or OFF
+
+    def set_fm_deviation(self, hz):
+        self.write(f":SOURce:FM:DEViation {hz}")
+
+    def set_fm_freq(self, hz):
+        self.write(f":SOURce:FM:FREQuency {hz}")
+
+    def set_fm_waveform(self, waveform):
+        self.write(f":SOURce:FM:WAVEform {waveform}")   # waveform: SINE or SQUA
+        pass

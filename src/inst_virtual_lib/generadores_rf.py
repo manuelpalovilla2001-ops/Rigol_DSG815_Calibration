@@ -29,6 +29,18 @@ class GeneradorRF(Instrument):
     def set_fm_waveform(self, waveform):
         pass
 
+    def set_am_state(self, state):
+        pass
+        
+    def set_am_depth(self, m):
+        pass
+        
+    def set_am_freq(self, hz):
+        pass
+        
+    def set_mod_output(self, state):
+        pass
+
 class RigolDSG815(GeneradorRF):
     
     def __init__(self, handler):
@@ -54,4 +66,15 @@ class RigolDSG815(GeneradorRF):
 
     def set_fm_waveform(self, waveform):
         self.write(f":SOURce:FM:WAVEform {waveform}")   # waveform: SINE or SQUA
-        pass
+
+    def set_am_state(self, state):
+        self.write(f":SOURce:AM:STATe {state}")
+
+    def set_am_depth(self, m):
+        self.write(f":SOURce:AM:DEPTh {m}")
+        
+    def set_am_freq(self, hz):
+        self.write(f":SOURce:AM:FREQuency {hz}")
+        
+    def set_mod_output(self, state):
+        self.write(f":OUTPut:MODulation:STATe {state}")

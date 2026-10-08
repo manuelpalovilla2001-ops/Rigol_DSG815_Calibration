@@ -1,5 +1,5 @@
 import numpy as np
-from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSG800_UNCERT, A_type_uncertainty
+from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSA800_UNCERT, A_type_uncertainty
 import pandas as pd
 
 def uncert_am(pcarrier: list, pside_band : list, SA_config : SpectralAnalizerConfig) -> Uncertainty:
@@ -9,26 +9,24 @@ def uncert_am(pcarrier: list, pside_band : list, SA_config : SpectralAnalizerCon
 
     # A + B type 
     sa_pcarrier_med = spectral_analyzer_power_uncertainty(pcarrier, SA_config, 
-                                                          DSG800_UNCERT['e_abs'],
+                                                          DSA800_UNCERT['e_abs'],
                                                           0,							# FR not used. Freq range very low.
-                                                          DSG800_UNCERT['e_rl'],        # TODO chequear si se uso el RL de calibracion o no.
+                                                          DSA800_UNCERT['e_rl'],        # TODO chequear si se uso el RL de calibracion o no.
                                                           0,							# Att SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
-                                                          DSG800_UNCERT['e_log'],
-                                                          DSG800_UNCERT['e_log_max'],
-                                                          0)                            # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log'],
+                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
 
     sa_pside_band_med = spectral_analyzer_power_uncertainty(pside_band, SA_config, 
-                                                          DSG800_UNCERT['e_abs'],
+                                                          DSA800_UNCERT['e_abs'],
                                                           0,							# FR not used. Freq range very low.
-                                                          DSG800_UNCERT['e_rl'],        # TODO chequear si se uso el RL de calibracion o no.
+                                                          DSA800_UNCERT['e_rl'],        # TODO chequear si se uso el RL de calibracion o no.
                                                           0,							# Att SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
-                                                          DSG800_UNCERT['e_log'],
-                                                          DSG800_UNCERT['e_log_max'],
-                                                          0)                            # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log'],
+                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
 
     # Uncertainty of AM measurement
     m_db = sa_pcarrier_med.val - sa_pside_band_med.val + 20 * np.log10(2)

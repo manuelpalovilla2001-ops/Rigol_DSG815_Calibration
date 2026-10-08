@@ -1,17 +1,21 @@
 import numpy as np
 
-DSG800_UNCERT = {
-    "e_abs": 0.5,  
-    "e_fr": 0.2,  
-    "e_rl": 0.3,  
-    "e_att_sw": 0.1, 
-    "e_rbw_sw": 0.05,
-    "e_rbw": 0.1, 
-    "e_log": 0.02,
-    "e_log_max": 0.5,
-    "e_res": 0.01 
-}
+YEARS = 2   # TODO. Check.
 
+DSA800_UNCERT = {
+    "e_abs": 0.4,       # In dB. # 0.3 if DSA832.
+    "e_fr": 0.7,        # In dB. # PA off, DSA815. Check page 9.
+    "e_rl": 0.01,       # In dB.
+    "e_att_sw": 0.5,    # In dB. # 0.3 if DSA832.
+    "e_rbw_sw": 0.1,    # In dB.
+    "e_rbw_P": 0.1,     # ???
+    "e_log": 0.0,       # Doesn't tell in the datasheet.
+    "e_log_max": 0.5,   # Doesn't tell in the datasheet.
+    
+    "er_rbw_f": 0.1,    # 10% error.
+    "er_span": 0.01,    # 1% error.
+    "er_fref": 2e-6 * YEARS + 2e-6 + 1e-6,   # Aging rate * Years + Temperature variation + Initial tolerance. In ppm.
+}
 
 class Uncertainty:
     def __init__(self, val, uncert, name = ''):
@@ -20,12 +24,13 @@ class Uncertainty:
         self.name = name
 
 class SpectralAnalizerConfig():
-    def __init__(self, rbw, vbw, span, ref_level, atte):
+    def __init__(self, rbw, vbw, span, ref_level, atte, N = 601):
         self.rbw = rbw
         self.vbw = vbw
         self.span = span
         self.ref_level = ref_level
         self.atte = atte
+        self.N = N
 
 def A_type_uncertainty(values: list, name: str) -> Uncertainty:
     values = np.mean(values)
@@ -123,7 +128,7 @@ def spectral_analyzer_power_uncertainty(pmed: Uncertainty,
                                         e_rl : float,
                                         e_att_sw : float,
                                         e_rbw_sw : float,
-                                        e_rbw : float,
+                                        e_rbw_P : float,
                                         e_log : float,
                                         e_log_max : float) -> Uncertainty:
     """
@@ -145,8 +150,8 @@ def spectral_analyzer_power_uncertainty(pmed: Uncertainty,
             Attenuator switch error. In dB.
         e_rbw_sw (float): 
             RBW switch error. In dB.
-        e_rbw (float):
-            Error of the RBW filter. In %. Internaly converted to dB as: 10log(1 + e_rbw/100)
+        e_rbw_P (float):
+            Error of the RBW filter. In %. Internaly converted to dB as: 10log(1 + e_rbw_P/100)
         e_log (float): 
             Logarithmic error. In dB. Defined as how many dB of error for any dB below RL.
         e_log_max (float):
@@ -161,10 +166,46 @@ def spectral_analyzer_power_uncertainty(pmed: Uncertainty,
     u_att_sw = e_att_sw / np.sqrt(3)
     u_rbw_sw = e_rbw_sw / np.sqrt(3)
 
-    u_rbw = 10 * np.log10(1 + e_rbw/100) / np.sqrt(3)
+    u_rbw = 10 * np.log10(1 + e_rbw_P/100) / np.sqrt(3)
     e_log_db = min(e_log * (SA_config.ref_level - pmed.val), e_log_max)
     u_log = e_log_db / np.sqrt(3)
 
     u_total = np.sqrt(u_abs**2 + u_fr**2 + u_rl**2 + u_att_sw**2 + u_rbw_sw**2 + u_rbw**2 + u_log**2 + pmed.uncert**2)
 
     return Uncertainty(pmed.val, u_total, "Spectral Analyzer Power Measurement Uncertainty")
+
+def spectral_analyzer_frequency_uncertainty(fmed: Uncertainty,
+                                            SA_config: SpectralAnalizerConfig,
+                                            er_fref : float,
+                                            er_span : float,
+                                            er_rbw : float) -> Uncertainty:
+    """
+    Returns the combined uncertainty of a spectral analyzer frequency measurement based on various contributing uncertainties.
+
+    Params:
+    ---
+        fmed (Uncertainty):
+            Frequency measurement uncertainty. In Hz.
+        SA_config (SpectralAnalizerConfig): 
+            Spectral analyzer configuration. 
+        er_fref (float): 
+            Reference Frequency relative error. 
+        er_span (float): 
+            Span error relative error.
+        er_rbw (float):
+            RBW error relative error.
+    Returns:
+    ---
+    Uncertainty: Combined uncertainty of the spectral analyzer frequency measurement.
+    """
+
+    e_fref = er_fref * fmed.val
+    e_span = er_span * SA_config.span
+    e_rbw = er_rbw * SA_config.rbw
+    e_marker = SA_config.span / (SA_config.N - 1)
+
+    u_f = (e_fref + e_span + e_rbw + e_marker) / np.sqrt(3)
+
+    return Uncertainty(fmed.val, u_f, "Spectral Analyzer Frequency Measurement Uncertainty")
+
+    

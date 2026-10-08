@@ -22,9 +22,11 @@ def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncert
     fm = sa_f1_med.val - sa_f2_med.val
     u_fm_db = np.sqrt(sa_f1_med.uncert**2 + sa_f2_med.uncert**2)
 
-    J0 = 2.40482555772
+    J0   = 2.40482555772
+    u_J0 = 0.00000000001 / np.sqrt(3)   # Round error
+
     delta_f = J0 * fm
-    u_delta_f = J0 * u_fm_db
+    u_delta_f = np.sqrt( (J0 * u_fm_db)**2 + (delta_f * u_J0)**2 )
 
     return Uncertainty(delta_f, u_delta_f, "FM Measurement Uncertainty")
 

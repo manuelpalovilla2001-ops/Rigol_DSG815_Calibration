@@ -2,13 +2,13 @@ import numpy as np
 from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSA800_UNCERT, A_type_uncertainty
 import pandas as pd
 
-def uncert_second_harmonic(p1: list, p_harmonic : list, SA_config : SpectralAnalizerConfig) -> Uncertainty:
+def uncert_second_harmonic(p1: list, p_harmonic : list, freq : float, SA_config : SpectralAnalizerConfig) -> Uncertainty:
     # A type
     p1 = A_type_uncertainty(p1, "P1")
     p_harmonic = A_type_uncertainty(p_harmonic, "P Harmonic")
 
     # A + B type 
-    sa_p1_med = spectral_analyzer_power_uncertainty(p1, SA_config, 
+    sa_p1_med = spectral_analyzer_power_uncertainty(p1, freq, SA_config, 
                                                           DSA800_UNCERT['e_abs'],
                                                           DSA800_UNCERT['e_fr'],
                                                           DSA800_UNCERT['e_rl'],
@@ -16,9 +16,9 @@ def uncert_second_harmonic(p1: list, p_harmonic : list, SA_config : SpectralAnal
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
                                                           DSA800_UNCERT['e_log'],
-                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log_max'])
 
-    sa_p2_med = spectral_analyzer_power_uncertainty(p_harmonic, SA_config, 
+    sa_p2_med = spectral_analyzer_power_uncertainty(p_harmonic, 2*freq, SA_config, 
                                                           DSA800_UNCERT['e_abs'],
                                                           DSA800_UNCERT['e_fr'],    
                                                           DSA800_UNCERT['e_rl'],
@@ -26,7 +26,7 @@ def uncert_second_harmonic(p1: list, p_harmonic : list, SA_config : SpectralAnal
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
                                                           DSA800_UNCERT['e_log'],
-                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log_max'])
 
     # Uncertainty of Second Harmonic measurement
     pmed = sa_p1_med.val - sa_p2_med.val
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     for freq, group in measure_groups:  
         p1 = group['Output Amplitude (dBm)'].tolist()
         p_harmonic =  (group['Output Amplitude (dBm)'] + group['Calculation Result (dBc)']).tolist()
-        second_harmonic = uncert_second_harmonic(p1, p_harmonic, SA_config)
+        second_harmonic = uncert_second_harmonic(p1, p_harmonic, freq, SA_config)
 
         real_freq.append(freq)
         measure_second_harmonic.append(second_harmonic)

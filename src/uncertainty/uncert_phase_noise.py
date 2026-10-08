@@ -8,7 +8,7 @@ def uncert_phase_noise(p1: list, pnoise : list, SA_config : SpectralAnalizerConf
     pnoise = A_type_uncertainty(pnoise, "Pnoise")
 
     # A + B type 
-    sa_p1_med = spectral_analyzer_power_uncertainty(p1, SA_config, 
+    sa_p1_med = spectral_analyzer_power_uncertainty(p1, 1e9, SA_config, 
                                                           DSA800_UNCERT['e_abs'],
                                                           0,                            # FR not used. Freq range very low.
                                                           DSA800_UNCERT['e_rl'],
@@ -16,9 +16,9 @@ def uncert_phase_noise(p1: list, pnoise : list, SA_config : SpectralAnalizerConf
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
                                                           DSA800_UNCERT['e_log'],
-                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log_max'])
 
-    sa_p2_med = spectral_analyzer_power_uncertainty(pnoise, SA_config, 
+    sa_p2_med = spectral_analyzer_power_uncertainty(pnoise, 1e9, SA_config, 
                                                           DSA800_UNCERT['e_abs'],
                                                           0,                            # FR not used. Freq range very low.
                                                           DSA800_UNCERT['e_rl'],
@@ -26,7 +26,7 @@ def uncert_phase_noise(p1: list, pnoise : list, SA_config : SpectralAnalizerConf
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
                                                           DSA800_UNCERT['e_log'],
-                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log_max'])
 
     # Uncertainty of Phase Noise measurement
     pmed = sa_p1_med.val - sa_p2_med.val

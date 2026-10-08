@@ -8,34 +8,36 @@ def uncert_am(pcarrier: list, pside_band : list, SA_config : SpectralAnalizerCon
     pside_band = A_type_uncertainty(pside_band, "PSide Band")
 
     # A + B type 
-    sa_pcarrier_med = spectral_analyzer_power_uncertainty(pcarrier, SA_config, 
+    sa_pcarrier_med = spectral_analyzer_power_uncertainty(pcarrier, 1e9, SA_config,     # Measure for 1GHz
                                                           DSA800_UNCERT['e_abs'],
                                                           0,							# FR not used. Freq range very low.
-                                                          DSA800_UNCERT['e_rl'],        # TODO chequear si se uso el RL de calibracion o no.
-                                                          0,							# Att SW doesnt apply. Relative Measurement.
+                                                          DSA800_UNCERT['e_rl'],
+                                                          0,                            # Att SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
                                                           DSA800_UNCERT['e_log'],
-                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
-
-    sa_pside_band_med = spectral_analyzer_power_uncertainty(pside_band, SA_config, 
+                                                          DSA800_UNCERT['e_log_max'])
+    
+    sa_pside_band_med = spectral_analyzer_power_uncertainty(pside_band, 1e9, SA_config, # Measure for 1GHz
                                                           DSA800_UNCERT['e_abs'],
                                                           0,							# FR not used. Freq range very low.
-                                                          DSA800_UNCERT['e_rl'],        # TODO chequear si se uso el RL de calibracion o no.
-                                                          0,							# Att SW doesnt apply. Relative Measurement.
+                                                          DSA800_UNCERT['e_rl'],
+                                                          0,                            # Att SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW SW doesnt apply. Relative Measurement.
                                                           0,                            # RBW doesnt apply. Measurment in a specific point in frequency.
                                                           DSA800_UNCERT['e_log'],
-                                                          DSA800_UNCERT['e_log_max'])   # Resolution doesnt apply. Measurment in a specific point in frequency.
+                                                          DSA800_UNCERT['e_log_max'])
 
     # Uncertainty of AM measurement
-    m_db = sa_pcarrier_med.val - sa_pside_band_med.val + 20 * np.log10(2)
-    u_m_db = np.sqrt(sa_pcarrier_med.uncert**2 + sa_pside_band_med.uncert**2)
-    m_med = Uncertainty(m_db, u_m_db, "AM Measurement Uncertainty")
+    # In dB
+    m_db = sa_pside_band_med.val - sa_pcarrier_med.val + 20 * np.log10(2)
+    u_m_db = np.sqrt(sa_pside_band_med.uncert**2 + sa_pcarrier_med.uncert**2)
 
-    # TODO Convert uncertainty from dB to % using propagation of uncertainty.
+    # Linear value
+    m_med = 10**(m_db/20)
+    u_m_med = m_med * (np.log(10)/20) * u_m_db
 
-    return m_med
+    return Uncertainty(m_med, u_m_med, "AM Measurement Uncertainty")
 
 if __name__ == "__main__":
     df = pd.read_csv("test_am.csv") # TODO. check Path.

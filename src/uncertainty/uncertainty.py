@@ -5,10 +5,10 @@ YEARS = 2   # TODO. Check.
 DSA800_UNCERT = {
     "e_abs": 0.4,       # In dB. # 0.3 if DSA832.
     "e_fr": 0.7,        # In dB. # PA off, DSA815. Check page 9.
-    "e_rl": 0.01,       # In dB.
+    "e_rl": 0,          # Doesn't tell in the datasheet. In dB.
     "e_att_sw": 0.5,    # In dB. # 0.3 if DSA832.
     "e_rbw_sw": 0.1,    # In dB.
-    "e_rbw_P": 0.1,     # ???
+    "e_rbw_P": 0.1,     # ??? (Not used)
     "e_log": 0.0,       # Doesn't tell in the datasheet.
     "e_log_max": 0.5,   # Doesn't tell in the datasheet.
     
@@ -24,13 +24,21 @@ class Uncertainty:
         self.name = name
 
 class SpectralAnalizerConfig():
-    def __init__(self, rbw, vbw, span, ref_level, atte, N = 601):
+    def __init__(self, rbw, vbw, span, ref_level, atte, N = 601, cal_atte = 10, cal_rbw = 1e3, cal_fc=50e6):
         self.rbw = rbw
         self.vbw = vbw
         self.span = span
         self.ref_level = ref_level
         self.atte = atte
         self.N = N
+
+        self.cal_rbw = cal_rbw
+        self.cal_atte = cal_atte
+        self.cal_fc = cal_fc
+
+class DSA800Config(SpectralAnalizerConfig):
+    def __init__(self, rbw, vbw, span, ref_level, atte, N=601,):
+        super().__init__(rbw, vbw, span, ref_level, atte, N, cal_atte = 10, cal_rbw = 1e3, cal_fc = 50e6)
 
 def A_type_uncertainty(values: list, name: str) -> Uncertainty:
     values = np.mean(values)
@@ -122,6 +130,7 @@ def power_meter_uncertainty(pmed: Uncertainty,
     return Uncertainty(pgzo, u_pgzo, "Power Meter Measurement Uncertainty")
 
 def spectral_analyzer_power_uncertainty(pmed: Uncertainty,
+                                        fmed: float,
                                         SA_config: SpectralAnalizerConfig,
                                         e_abs : float,
                                         e_fr : float,
@@ -161,10 +170,10 @@ def spectral_analyzer_power_uncertainty(pmed: Uncertainty,
     Uncertainty: Combined uncertainty of the spectral analyzer power measurement.
     """
     u_abs = e_abs / np.sqrt(3)
-    u_fr = e_fr / np.sqrt(3)
+    u_fr = e_fr / np.sqrt(3) if SA_config.cal_fc != fmed else 0
     u_rl = e_rl / np.sqrt(3)
-    u_att_sw = e_att_sw / np.sqrt(3)
-    u_rbw_sw = e_rbw_sw / np.sqrt(3)
+    u_att_sw = e_att_sw / np.sqrt(3) if SA_config.atte != SA_config.cal_atte else 0
+    u_rbw_sw = e_rbw_sw / np.sqrt(3) if SA_config.rbw != SA_config.cal_rbw else 0
 
     u_rbw = 10 * np.log10(1 + e_rbw_P/100) / np.sqrt(3)
     e_log_db = min(e_log * (SA_config.ref_level - pmed.val), e_log_max)

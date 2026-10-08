@@ -116,3 +116,7 @@ class RigolDsa800(AnalizadorEspectro):
 
     def set_marker_noise(self, marker, state):
         self.write(f":CALCulate:MARKer{marker}:FUNCtion {state}")    # state = NOISe u OFF
+
+    def get_sweep_time(self):
+        st = self.query(":SENSe:SWEep:TIME?")
+        return st

@@ -44,7 +44,7 @@ def A_type_uncertainty(values: list, name: str) -> Uncertainty:
     values = np.atleast_1d(values)
     value = np.mean(values)
     n = len(values)
-    ui = np.std(values, ddof=1) / np.sqrt(n) if n >= 2 else 0
+    ui = np.std(values, ddof=1) / np.sqrt(n) if n > 2 else 0
     return Uncertainty(value, ui, name)
 
 def roe_to_gamma(roe):

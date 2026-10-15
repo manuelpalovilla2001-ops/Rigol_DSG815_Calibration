@@ -40,9 +40,9 @@ def uncert_am(pcarrier: list, pside_band : list, SA_config : SpectralAnalizerCon
     return Uncertainty(m_med, u_m_med, "AM Measurement Uncertainty")
 
 if __name__ == "__main__":
-    df = pd.read_csv("./data/test_am.csv") # TODO. check Path.
+    df = pd.read_csv("./data/test_am.csv")
 
-    SA_config = SpectralAnalizerConfig(rbw=100, vbw=100, span=10e3, ref_level=0, atte=10)   # TODO. check
+    SA_config = SpectralAnalizerConfig(rbw=100, vbw=100, span=10e3, ref_level=0, atte=10)
 
     measure_groups = df.groupby("AM Depth Setting (%)")
 

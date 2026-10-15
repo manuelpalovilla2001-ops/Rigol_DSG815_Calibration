@@ -41,8 +41,6 @@ if __name__ == "__main__":
     SA_config2_amp10 = SpectralAnalizerConfig(rbw=30, vbw=10, span=10e3, ref_level=20, atte=30)
     measure_groups = df.groupby(["Output Amplitude (dBm)", "Output Frequency (Hz)"])
 
-    print(np.std([10], ddof=1))
-
     real_set = []
     measure_second_harmonic : list[Uncertainty] = []
     

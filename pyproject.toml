@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uncertainty"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "pyvisa",
+]
+
+[project.optional-dependencies]
+dev = ["ipykernel"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["uncert_lib*", "inst_virtual_lib*"]

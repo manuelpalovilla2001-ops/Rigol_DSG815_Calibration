@@ -1,4 +1,4 @@
-from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_frequency_uncertainty, DSA800_UNCERT, A_type_uncertainty
+from uncert_lib.uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_frequency_uncertainty, DSA800_UNCERT, A_type_uncertainty
 import pandas as pd
 
 def uncert_10mhz_ref(f1: list, SA_config : SpectralAnalizerConfig) -> Uncertainty:

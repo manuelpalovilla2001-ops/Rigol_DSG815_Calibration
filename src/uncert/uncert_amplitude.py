@@ -1,4 +1,4 @@
-from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSG800_UNCERT, A_type_uncertainty
+from uncert_lib.uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSG800_UNCERT, A_type_uncertainty
 import pandas as pd
 
 def uncert_amplitude(power: list, freq : float, SA_config : SpectralAnalizerConfig) -> Uncertainty:

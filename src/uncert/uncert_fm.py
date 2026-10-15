@@ -1,5 +1,5 @@
 import numpy as np
-from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_frequency_uncertainty, DSG800_UNCERT, A_type_uncertainty
+from uncert_lib.uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_frequency_uncertainty, DSG800_UNCERT, A_type_uncertainty
 import pandas as pd
 
 def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncertainty:

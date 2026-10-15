@@ -41,9 +41,11 @@ class DSA800Config(SpectralAnalizerConfig):
         super().__init__(rbw, vbw, span, ref_level, atte, N, cal_atte = 10, cal_rbw = 1e3, cal_fc = 50e6)
 
 def A_type_uncertainty(values: list, name: str) -> Uncertainty:
-    values = np.mean(values)
-    ui = np.std(values, ddof=1) / np.sqrt(len(values))
-    return Uncertainty(values, ui, name)
+    values = np.atleast_1d(values)
+    value = np.mean(values)
+    n = len(values)
+    ui = np.std(values, ddof=1) / np.sqrt(n) if n >= 2 else 0
+    return Uncertainty(value, ui, name)
 
 def roe_to_gamma(roe):
     """

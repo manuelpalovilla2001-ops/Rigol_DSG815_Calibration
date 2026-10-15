@@ -1,5 +1,5 @@
 import numpy as np
-from .uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSA800_UNCERT, A_type_uncertainty
+from uncert_lib.uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_power_uncertainty, DSA800_UNCERT, A_type_uncertainty
 import pandas as pd
 
 def uncert_phase_noise(p1: list, pnoise : list, SA_config : SpectralAnalizerConfig) -> Uncertainty:

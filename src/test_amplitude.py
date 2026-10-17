@@ -1,120 +1,131 @@
 import pyvisa
 import time
 import pandas as pd
-from inst_virtual_lib import RigolDSG815, RigolDsa800, AnritsuML2487B
+from inst_virtual_lib import RigolDSG815, RigolDsa800
 
 def main():
     frecuencias_prueba = [103000, 1030000, 50030000, 503000000, 1403000000]
-    amplitud_ref = -10.0 # dBm
+    amplitud_ref = -10.0  # dBm
     
-    valores_A1 = {}
+    ref_level = 0         # dBm
+    atenuador = 10        # dB
+    rbw = 30000
+    span = 100000
+    N = 20
+
     resultados = []
     rm = pyvisa.ResourceManager()
 
     try:
-        # IMPORTANTE: Reemplazar con las direcciones USB reales
-        generador = RigolDSG815(rm.open_resource(rm.list_resources('?*::DSG?*:INSTR')[0]))
-        medidor = AnritsuML2487B(rm.open_resource('GPIB0::...::INSTR'))
+        generador = RigolDSG815(rm.open_resource(rm.list_resources('?*DSG?*')[0]))
+        analizador = RigolDsa800(rm.open_resource(rm.list_resources('?*DSA?*')[0]))
 
-        generador.set_amplitud(amplitud_ref) 
+        id_generador = generador.INSTR_ID.strip()
+        id_analizador = analizador.INSTR_ID.strip()
+        print(f"Generador: {id_generador}")
+        print(f"Analizador:      {id_analizador}\n")
+
+        analizador.set_referencelevel(ref_level)
+        analizador.set_atenuator(atenuador)
+        analizador.set_span(span)
+        analizador.set_rbw(rbw)
+        time.sleep(1)
+
+        generador.set_amplitud(amplitud_ref)
         generador.set_rf_output("ON")
+        time.sleep(1)
+
+        sweep_time = float(analizador.get_sweep_time()) * 1.2
 
         for freq in frecuencias_prueba:
+            print(f"--- Midiendo en Frecuencia: {freq} Hz ---")
+            time.sleep(sweep_time)
+            
             generador.set_frecuencia(freq)
-            medidor.set_frecuencia(freq, sensor='A')
-            time.sleep(5)
-            potencia_A1 = medidor.get_potencia(canal=1)
-            valores_A1[freq] = potencia_A1
+            analizador.set_freq_center(freq)
+            time.sleep(sweep_time)
 
-        if 'medidor' in locals(): 
-                    medidor.close()
+            analizador.peaksearch(1)
+            time.sleep(sweep_time)
 
-        print("\n" + "="*60)
-        input("ATENCIÓN: Desconecte el medidor de potencia.\n"
-                "Conecte el Generador (RF OUT) al Analizador de Espectro (RF IN).\n"
-                "Presione ENTER cuando esté listo para continuar...")
-        print("="*60 + "\n")
+            _, f_pico_str = analizador.get_marker(1)
+            f_pico = float(f_pico_str)
+            
+            analizador.set_freq_center(f_pico)
+            time.sleep(sweep_time)
 
-        analizador = RigolDsa800(rm.open_resource(rm.list_resources('?*::DSA?*:INSTR')[0]))
-
-        analizador.set_span(1e6)          # Span = 1 MHz
-        analizador.set_referencelevel(0)  # Ref Level = 0 dBm
-        analizador.set_atenuator(10)      # Input Attenuation = 10 dB
-        analizador.set_rbw(10e3)          # RBW = 10 kHz
-
-        error_sistema = {}
-
-        for freq in frecuencias_prueba:
-            generador.set_frecuencia(freq)
-            analizador.set_freq_center(freq)            
-            time.sleep(2)
-            analizador.set_marker_freq(1,freq)
-
-            while True:
-                amp, _ = analizador.get_marker(1)
-                if float(amp) > -50:
-                    break
-                time.sleep(2)
-
-            amp_str, frecuencia_str = analizador.get_marker(1)
-            potencia_A2 = float(amp_str)
-
-            es = potencia_A2 - valores_A1[freq]
-            error_sistema[freq] = es
-
-        amplitudes_prueba = [-10.0, -80.0]
-        analizador.set_span(100)      # Span = 100 Hz
-        analizador.set_atenuator(10)  # Input Attenuation = 10 dB
-        analizador.set_rbw(10)        # RBW = 10 Hz
-
-        for amp_ref in amplitudes_prueba:
-            generador.set_amplitud(amp_ref)
-
-            if amp_ref == -10.0:
-                analizador.set_referencelevel(0)
-            else:
-                analizador.set_referencelevel(-20)
-
-            for freq in frecuencias_prueba:
-                generador.set_frecuencia(freq)
-                analizador.set_freq_center(freq)
-                time.sleep(3)
+            for n_med in range(1, N + 1):
+                time.sleep(sweep_time)
                 
-                analizador.peaksearch(1)
-                time.sleep(0.5)
-                
-                amp_str, _ = analizador.get_marker(1)
-                potencia_A3 = float(amp_str)
-                
-                
-                error_global = potencia_A3 - amp_ref
-                precision_amplitud = abs(error_global - es[freq])
-                                
-                print(f"Frec: {freq} Hz | Ref: {amp_ref} | A3: {potencia_A3} dBm | "
-                      f"Precisión: {precision_amplitud:.3f} dB")
-                
-                resultados.append([amp_ref, freq, potencia_A3, error_global, precision_amplitud])
+                intentos = 0
+                while True:
+                    analizador.peaksearch(1)
+                    time.sleep(1)
+                    amp_str, frec_med_str = analizador.get_marker(1)
+                    potencia_med = float(amp_str)
+                    frec_med = float(frec_med_str)
+                    
+                    if potencia_med > -50.0 or intentos >= 10:
+                        break
+                    intentos += 1
+                    time.sleep(1)
+
+                error = potencia_med - amplitud_ref
+
+                rbw_actual = int(analizador.query(":SENSe:BANDwidth:RESolution?"))
+                span_actual = int(analizador.query(":SENSe:FREQuency:SPAN?"))
+                att_actual = int(analizador.query(":SENSe:POWer:RF:ATTenuation?"))
+                ref_lvl_actual = float(analizador.query(":DISPlay:WINdow:TRACe:Y:SCALe:RLEVel?"))
+
+                print(f"[{n_med:02d}/{N}] Frec: {freq} Hz | Med: {potencia_med:.2f} dBm | Error: {error:.2f} dB")
+
+                resultados.append([
+                    id_generador,
+                    id_analizador,
+                    n_med,
+                    amplitud_ref,
+                    freq,
+                    frec_med,
+                    potencia_med,
+                    error,
+                    rbw_actual,
+                    span_actual,
+                    att_actual,
+                    ref_lvl_actual
+                ])
 
     except pyvisa.Error as e:
-        print(f"Error de conexion: {e}")
-
+        print(f"Error de conexion VISA: {e}")
     finally:
         if 'generador' in locals():
             generador.set_rf_output("OFF")
             generador.close()
-        rm.close()
-        if 'analizador' in locals(): analizador.close()
+        if 'analizador' in locals(): 
+            analizador.close()
         rm.close()
 
     if resultados:
-        columnas = ["Reference Value (dBm)", "Output Frequency (Hz)", "Measurement Value A3", "Global Error", "Amplitude Accuracy"]
+        columnas = [
+            "Generador (UUT)",
+            "Instrumento Medicion",
+            "N_Medicion",
+            "Reference Value (dBm)",
+            "Output Frequency (Hz)",
+            "Measured Frequency (Hz)",
+            "Measurement Value (dBm)",
+            "Error (dB)",
+            "RBW (Hz)",
+            "SPAN (Hz)",
+            "Attenuator (dB)",
+            "Reference Level (dBm)"
+        ]
         df = pd.DataFrame(resultados, columns=columnas)
         
         nombre_archivo = "test_amplitud.csv"
         df.to_csv(nombre_archivo, index=False)
         
-        print("\n--- Reporte Guardado: Generado Amplitud---")
-        print(df.to_string(index=False))
+        print(f"\n--- Reporte Guardado: {nombre_archivo} ---")
+        print(df[["N_Medicion", "Output Frequency (Hz)", "Measurement Value (dBm)", "Error (dB)", "RBW (Hz)", "SPAN (Hz)"]].to_string(index=False))
 
 if __name__ == "__main__":
     main()

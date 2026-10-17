@@ -32,14 +32,23 @@ def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncert
 
 if __name__ == "__main__":
     df = pd.read_csv("test_fm.csv") # TODO. check Path.
-
-    SA_config = SpectralAnalizerConfig(rbw=100, vbw=100, span=10e3, ref_level=0, atte=10)   # TODO. Check
-
     measure_groups = df.groupby("Delta F")  # TODO. Check names
+
+    check_config = measure_groups[['RBW (Hz)', 'VBW (Hz)', 'SPAN (Hz)', 'Attenuator (dB)', 'Reference Level (dBm)']].nunique(dropna=False)
+    if not check_config.eq(1).all().all():
+        raise ValueError("No todas las configuraciones son iguales")
+
     real_incf = []
     measure_incf = []
     
     for incf, group in measure_groups:  
+        rbw = group['RBW (Hz)'].iloc[0]
+        vbw = group['VBW (Hz)'].iloc[0]
+        span = group['SPAN (Hz)'].iloc[0] 
+        ref_level = group['Reference Level (dBm)'].iloc[0]
+        atte = group['Attenuator (dB)'].iloc[0]
+        SA_config = SpectralAnalizerConfig(rbw=rbw, vbw=vbw, span=span, ref_level=ref_level, atte=atte)
+
         f1 = group['F1'].tolist()
         f2 =  group['F2'].tolist()
         incf_med = uncert_fm(f1, f2, SA_config)

@@ -29,27 +29,33 @@ def uncert_second_harmonic(p1: list, p_harmonic : list, freq : float, SA_config 
                                                           DSA800_UNCERT['e_log_max'])
 
     # Uncertainty of Second Harmonic measurement
-    pmed = sa_p1_med.val - sa_p2_med.val
+    pmed = sa_p2_med.val - sa_p1_med.val
     u_db = np.sqrt(sa_p1_med.uncert**2 + sa_p2_med.uncert**2)
 
     return Uncertainty(pmed, u_db, "Second Harmonic Measurement Uncertainty")
 
 if __name__ == "__main__":
-    df = pd.read_csv("./data/reporte_second_harmonic.csv")
-
-    SA_config_amp0 = SpectralAnalizerConfig(rbw=30, vbw=10, span=10e3, ref_level=10, atte=20)
-    SA_config2_amp10 = SpectralAnalizerConfig(rbw=30, vbw=10, span=10e3, ref_level=20, atte=30)
+    df = pd.read_csv("./data/test_second_harmonic.csv")
     measure_groups = df.groupby(["Output Amplitude (dBm)", "Output Frequency (Hz)"])
+
+    check_config = measure_groups[['RBW (Hz)', 'VBW (Hz)', 'SPAN (Hz)', 'Attenuator (dB)', 'Reference Level (dBm)']].nunique(dropna=False)
+    if not check_config.eq(1).all().all():
+        raise ValueError("No todas las configuraciones son iguales")
 
     real_set = []
     measure_second_harmonic : list[Uncertainty] = []
     
     for (amp, freq), group in measure_groups:  
-        p1 = amp
-        p_harmonic = group['Calculation Result (dBc)'].tolist()
-        p_harmonic = [pdbc + amp for pdbc in p_harmonic]
+        rbw = group['RBW (Hz)'].iloc[0]
+        vbw = group['VBW (Hz)'].iloc[0]
+        span = group['SPAN (Hz)'].iloc[0] 
+        ref_level = group['Reference Level (dBm)'].iloc[0]
+        atte = group['Attenuator (dB)'].iloc[0]
+        SA_config = SpectralAnalizerConfig(rbw=rbw, vbw=vbw, span=span, ref_level=ref_level, atte=atte)
 
-        SA_config = SA_config_amp0 if amp == 0 else SA_config2_amp10
+        p1 = group['Fundamental Power (dBm)'].tolist()
+        p_harmonic = group['2nd Harmonic Power (dBm)'].tolist()
+
         second_harmonic = uncert_second_harmonic(p1, p_harmonic, freq, SA_config)
 
         real_set.append((amp, freq))
@@ -58,7 +64,7 @@ if __name__ == "__main__":
     for (amp, freq), sec_harm in zip(real_set, measure_second_harmonic):
         k = 2
         u_expanded = sec_harm.uncert * k
-        print(f"Setting: {{{amp:>2} dB, {freq/1e6:>5} MHz}} | Measured Second Harmonic: {sec_harm.val:.2f} dBc | Uncertainty: {u_expanded:.2g} dB | K: {k} | Confianza: 95%")    
+        print(f"Setting: {{{amp:>2} dB, {freq/1e6:>5} MHz}} | Measured Second Harmonic: {sec_harm.val:.2f} dBc | Uncertainty: {u_expanded:>5.3g} dB | K: {k} | Confianza: 95%")    
 
 
 

@@ -71,7 +71,6 @@ def main():
                 ref_lvl_actual = float(analizador.query(":DISPlay:WINdow:TRACe:Y:SCALe:RLEVel?"))
                 
                 print(f"Indice de mod: {m_set}% | medicion:{n_med}/{N} | Delta P: {delta_p:.2f} dB | Indice Medido: {m_calculado:.2f}%")
-                resultados_am.append([m_set, n_med, p_carrier, p_sideband, delta_p, m_calculado, error_m])
 
                 resultados_am.append([
                     id_generador,

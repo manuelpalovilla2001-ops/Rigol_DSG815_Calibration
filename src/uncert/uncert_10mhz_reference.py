@@ -15,14 +15,23 @@ def uncert_10mhz_ref(f1: list, SA_config : SpectralAnalizerConfig) -> Uncertaint
 
 if __name__ == "__main__":
     df = pd.read_csv("reporte_10mhz_reference.csv") # TODO. check Path.
-
-    SA_config = SpectralAnalizerConfig(rbw=100, vbw=100, span=10e3, ref_level=0, atte=10)   # TODO. Check
-
     measure_groups = df.groupby("Amplitud Referencia")  # TODO. Check names
+    
+    check_config = measure_groups[['RBW (Hz)', 'VBW (Hz)', 'SPAN (Hz)', 'Attenuator (dB)', 'Reference Level (dBm)']].nunique(dropna=False)
+    if not check_config.eq(1).all().all():
+        raise ValueError("No todas las configuraciones son iguales")
+
     real_amplitud = []
     measure_f = []
     
     for ampl, group in measure_groups:  
+        rbw = group['RBW (Hz)'].iloc[0]
+        vbw = group['VBW (Hz)'].iloc[0]
+        span = group['SPAN (Hz)'].iloc[0] 
+        ref_level = group['Reference Level (dBm)'].iloc[0]
+        atte = group['Attenuator (dB)'].iloc[0]
+        SA_config = SpectralAnalizerConfig(rbw=rbw, vbw=vbw, span=span, ref_level=ref_level, atte=atte)
+
         f = group['F'].tolist()
         f_med = uncert_10mhz_ref(f, SA_config)
 

@@ -41,18 +41,26 @@ def uncert_am(pcarrier: list, pside_band : list, SA_config : SpectralAnalizerCon
 
 if __name__ == "__main__":
     df = pd.read_csv("./data/test_am.csv")
+    measure_groups = df.groupby("Modulation Depth Set")
 
-    SA_config = SpectralAnalizerConfig(rbw=100, vbw=100, span=10e3, ref_level=0, atte=10)
-
-    measure_groups = df.groupby("AM Depth Setting (%)")
-
+    check_config = measure_groups[['RBW (Hz)', 'VBW (Hz)', 'SPAN (Hz)', 'Attenuator (dB)', 'Reference Level (dBm)']].nunique(dropna=False)
+    if not check_config.eq(1).all().all():
+        raise ValueError("No todas las configuraciones son iguales")
+    
     real_m = []
     measure_m : list[Uncertainty] = []
     
     for am_index, group in measure_groups:
-        pcarrier = group['Carrier Power (dBm)'].tolist()
-        pside_band = group['Sideband Power (dBm)'].tolist()
+        rbw = group['RBW (Hz)'].iloc[0]
+        vbw = group['VBW (Hz)'].iloc[0]
+        span = group['SPAN (Hz)'].iloc[0] 
+        ref_level = group['Reference Level (dBm)'].iloc[0]
+        atte = group['Attenuator (dB)'].iloc[0]
+        SA_config = SpectralAnalizerConfig(rbw=rbw, vbw=vbw, span=span, ref_level=ref_level, atte=atte)
 
+        pcarrier = -10
+        pside_band = group['P_carrier - P_sideband'].tolist()
+        pside_band = [pcarrier - i for i in pside_band]
         m_med= uncert_am(pcarrier, pside_band, SA_config)
 
         real_m.append(am_index)
@@ -61,6 +69,4 @@ if __name__ == "__main__":
     for am_index, m_med in zip(real_m, measure_m):
         k = 2
         u_expanded = m_med.uncert * k
-        print(f"AM Depth Setting: {am_index/100} | Measured AM: {m_med.val:.2f} | Uncertainty: {u_expanded:>6.2g} | K: {k} | Confianza: 95%")    
-
-
+        print(f"Modulation Depth Set: {am_index/100} | Measured AM: {m_med.val:.2f} | Uncertainty: {u_expanded:>6.2g} | K: {k} | Confianza: 95%")    

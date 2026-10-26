@@ -1,5 +1,5 @@
 import numpy as np
-from uncert_lib.uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_frequency_uncertainty, DSG800_UNCERT, A_type_uncertainty
+from uncert_lib.uncertainty import Uncertainty, SpectralAnalizerConfig, spectral_analyzer_frequency_uncertainty, DSA800_UNCERT, A_type_uncertainty
 import pandas as pd
 
 def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncertainty:
@@ -9,14 +9,14 @@ def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncert
 
     # A + B type 
     sa_f1_med = spectral_analyzer_frequency_uncertainty(f1, SA_config,
-                                                        DSG800_UNCERT['er_fref'],
-                                                        DSG800_UNCERT['er_span'],
-                                                        DSG800_UNCERT['er_rbw_f'])
+                                                        DSA800_UNCERT['er_fref'],
+                                                        DSA800_UNCERT['er_span'],
+                                                        DSA800_UNCERT['er_rbw_f'])
 
     sa_f2_med = spectral_analyzer_frequency_uncertainty(f2, SA_config, 
-                                                        DSG800_UNCERT['er_fref'],
-                                                        DSG800_UNCERT['er_span'],
-                                                        DSG800_UNCERT['er_rbw_f'])
+                                                        DSA800_UNCERT['er_fref'],
+                                                        DSA800_UNCERT['er_span'],
+                                                        DSA800_UNCERT['er_rbw_f'])
 
     # Calculation
     fm = sa_f1_med.val - sa_f2_med.val

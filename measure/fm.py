@@ -120,7 +120,6 @@ def main():
 
                 distancia_f2_f1 = abs(f2 - f1)
                 delta_f_med = beta * distancia_f2_f1
-                error = delta_f_med - desvio
                 dif_list.append(distancia_f2_f1)
 
                 rbw_actual = int(analizador.query(":SENSe:BANDwidth:RESolution?"))
@@ -138,9 +137,8 @@ def main():
                     n_med,
                     desvio,
                     fm_min,
-                    distancia_f2_f1,
-                    delta_f_med,
-                    error,
+                    f1,
+                    f2,
                     rbw_actual,
                     vbw_actual,
                     span_actual,
@@ -167,9 +165,8 @@ def main():
             "N_Medicion",
             "Delta F",
             "fm (Hz)",
-            "|F2 - F1|",
-            "Delta Fmed",
-            "Error",
+            "F1",
+            "F2",
             "RBW (Hz)",
             "VBW (Hz)",
             "SPAN (Hz)",

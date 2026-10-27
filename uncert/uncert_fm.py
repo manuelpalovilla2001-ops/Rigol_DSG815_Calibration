@@ -31,8 +31,8 @@ def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncert
     return Uncertainty(delta_f, u_delta_f, "FM Measurement Uncertainty")
 
 if __name__ == "__main__":
-    df = pd.read_csv("test_fm.csv") # TODO. check Path.
-    measure_groups = df.groupby("Delta F")  # TODO. Check names
+    df = pd.read_csv("./data/test_fm.csv")
+    measure_groups = df.groupby("Delta F")
 
     check_config = measure_groups[['RBW (Hz)', 'VBW (Hz)', 'SPAN (Hz)', 'Attenuator (dB)', 'Reference Level (dBm)']].nunique(dropna=False)
     if not check_config.eq(1).all().all():

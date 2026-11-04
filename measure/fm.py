@@ -44,8 +44,8 @@ def main():
         f_exacta = float(f_exacta_str)
         analizador.set_freq_center(f_exacta)
 
-        analizador.set_span(2e3)
-        analizador.set_rbw(300)
+        analizador.set_span(1e3)
+        analizador.set_rbw(100)
         sweep_time = float(analizador.get_sweep_time().strip()) * 1.2
         time.sleep(sweep_time)
         analizador.peaksearch(1)
@@ -73,7 +73,7 @@ def main():
             for n_med in range(1, N+1):
 
                 analizador.set_freq_center(f_exacta)
-                analizador.set_span(500)
+                analizador.set_span(5e3)
                 analizador.set_rbw(100)
                 analizador.set_marker_freq(1, f_exacta)
                 sweep_time = float(analizador.get_sweep_time().strip()) * 1.2
@@ -101,8 +101,8 @@ def main():
                 generador.set_fm_freq(fm_min)
 
                 analizador.set_freq_center(f_exacta + fm_min)
-                analizador.set_span(5e3)
-                analizador.set_rbw(300)
+                analizador.set_span(2e3)
+                analizador.set_rbw(100)
                 time.sleep(1)
                 sweep_time = float(analizador.get_sweep_time().strip()) * 1.2
                 time.sleep(sweep_time)

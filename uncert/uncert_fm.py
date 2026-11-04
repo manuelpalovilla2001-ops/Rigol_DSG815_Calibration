@@ -26,7 +26,7 @@ def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncert
     u_J0 = 0.00000000001 / np.sqrt(3)   # Round error
 
     delta_f = J0 * fm
-    u_delta_f = np.sqrt( (J0 * u_fm_db)**2 + (delta_f * u_J0)**2 )
+    u_delta_f = np.sqrt( (J0 * u_fm_db)**2 + (fm * u_J0)**2 )
 
     return Uncertainty(delta_f, u_delta_f, "FM Measurement Uncertainty")
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
         f1 = group['F1'].tolist()
         f2 =  group['F2'].tolist()
-        incf_med = uncert_fm(f1, f2, SA_config)
+        incf_med = uncert_fm(f2, f1, SA_config)
 
         real_incf.append(incf)
         measure_incf.append(incf_med)

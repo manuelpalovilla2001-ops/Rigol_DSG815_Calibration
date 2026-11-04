@@ -215,8 +215,8 @@ def spectral_analyzer_frequency_uncertainty(fmed: Uncertainty,
     e_rbw = er_rbw * SA_config.rbw
     e_marker = SA_config.span / (SA_config.N - 1)
 
-    u_f = (e_fref + e_span + e_rbw + e_marker) / np.sqrt(3)
-
-    return Uncertainty(fmed.val, u_f, "Spectral Analyzer Frequency Measurement Uncertainty")
+    u_f = np.sqrt(e_fref**2 + e_span**2 + e_rbw**2 + e_marker**2) / np.sqrt(3)
+    u_total = np.sqrt(fmed.uncert**2 + u_f**2)   
+    return Uncertainty(fmed.val, u_total, "Spectral Analyzer Frequency Measurement Uncertainty")
 
     

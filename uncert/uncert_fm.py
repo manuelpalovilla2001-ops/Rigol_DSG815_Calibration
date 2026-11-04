@@ -9,12 +9,12 @@ def uncert_fm(f1: list, f2 : list, SA_config : SpectralAnalizerConfig) -> Uncert
 
     # A + B type 
     sa_f1_med = spectral_analyzer_frequency_uncertainty(f1, SA_config,
-                                                        DSA800_UNCERT['er_fref'],
+                                                        0, #DSA800_UNCERT['er_fref'] None in relative measurement
                                                         DSA800_UNCERT['er_span'],
                                                         DSA800_UNCERT['er_rbw_f'])
 
     sa_f2_med = spectral_analyzer_frequency_uncertainty(f2, SA_config, 
-                                                        DSA800_UNCERT['er_fref'],
+                                                        0, #DSA800_UNCERT['er_fref'] None in relative measurement,
                                                         DSA800_UNCERT['er_span'],
                                                         DSA800_UNCERT['er_rbw_f'])
 
@@ -57,6 +57,9 @@ if __name__ == "__main__":
         measure_incf.append(incf_med)
 
     for incf, incf_med in zip(real_incf, measure_incf):
-        print(f"Incremental Frequency Setting: {incf} Hz | Measured Incremental Frequency: {incf_med.val:.2f} Hz | Uncertainty: {incf_med.uncert:.2f} Hz")    
+        k = 2
+        u_expanded = incf_med.uncert * k
+
+        print(f"Incremental Frequency Setting: {incf:>6.3g} Hz | Measured Incremental Frequency: {incf_med.val:>6.5g} Hz | Uncertainty: {u_expanded:>8.3g} Hz | K: {k} | Confianza: 95%")
 
 
